@@ -5,36 +5,39 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.test.annotation.Commit;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 
 import hello.itemservice.repository.ItemRepository;
 import hello.itemservice.repository.ItemSearchCond;
 import hello.itemservice.repository.ItemUpdateDto;
 import hello.itemservice.repository.memory.MemoryItemRepository;
 
+@Transactional
 @SpringBootTest
 class ItemRepositoryTest {
 
 	@Autowired
 	ItemRepository itemRepository;
 
-	@Autowired
-	PlatformTransactionManager transactionManager;
+	// 트랜잭션 관련 코드
+	/*
+	 * @Autowired
+	 * PlatformTransactionManager transactionManager;
+	 * 
+	 * TransactionStatus status;
+	 * 
+	 * @BeforeEach
+	 *  void beforeEach() { 
+	 *  	//트랜잭션 시작
+	 *  	status = transactionManager.getTransaction(new DefaultTransactionDefinition());
+	 *  }
+	 */
 	
-	TransactionStatus status;
-
-	@BeforeEach
-	void beforeEach() {
-		// 트랜잭션 시작
-		status = transactionManager.getTransaction(new DefaultTransactionDefinition());
-	}
-
 	@AfterEach
 	void afterEach() {
 		// MemoryItemRepository 의 경우 제한적으로 사용
@@ -42,9 +45,12 @@ class ItemRepositoryTest {
 			((MemoryItemRepository) itemRepository).clearStore();
 		}
 		// 트랜잭션 롤백
-		transactionManager.rollback(status);
+		// transactionManager.rollback(status);
 	}
 
+	@Commit
+	@Transactional
+	@Rollback(false)
 	@Test
 	void save() {
 		// given
