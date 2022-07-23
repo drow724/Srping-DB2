@@ -18,7 +18,6 @@ import hello.itemservice.repository.memory.MemoryItemRepository;
 
 @Transactional
 @SpringBootTest
-@ActiveProfiles("test")
 class ItemRepositoryTest {
 
 	@Autowired
