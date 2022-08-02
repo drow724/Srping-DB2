@@ -15,6 +15,8 @@ import javax.sql.DataSource;
 import org.springframework.transaction.UnexpectedRollbackException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.springframework.transaction.TransactionDefinition;
+
 @Slf4j
 @SpringBootTest
 public class BasicTxTest {
@@ -108,5 +110,21 @@ public class BasicTxTest {
 		txManager.rollback(inner);
 		log.info("외부 트랜잭션 커밋");
 		assertThatThrownBy(() -> txManager.commit(outer)).isInstanceOf(UnexpectedRollbackException.class);
+	}
+
+	@Test
+	void inner_rollback_requires_new() {
+		log.info("외부 트랜잭션 시작");
+		TransactionStatus outer = txManager.getTransaction(new DefaultTransactionAttribute());
+		log.info("outer.isNewTransaction()={}", outer.isNewTransaction());
+		log.info("내부 트랜잭션 시작");
+		DefaultTransactionAttribute definition = new DefaultTransactionAttribute();
+		definition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+		TransactionStatus inner = txManager.getTransaction(definition);
+		log.info("inner.isNewTransaction()={}", inner.isNewTransaction());
+		log.info("내부 트랜잭션 롤백");
+		txManager.rollback(inner); // 롤백
+		log.info("외부 트랜잭션 커밋");
+		txManager.commit(outer); // 커밋
 	}
 }
